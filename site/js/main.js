@@ -30,6 +30,15 @@ scene.environment = envMap;
 scene.environmentIntensity = 0.45;
 
 const camera = new THREE.PerspectiveCamera(30, 1, 0.5, 1200);
+// Derinlik hassasiyeti yakın düzleme bağlıdır (çözünürlük ≈ d² / (near · 2²⁴)). Sabit 0.5 m'de 170 m'den
+// bakınca ~3 mm aralıklı yüzeyler titriyordu; yakın düzlemi hedefe olan mesafeyle büyütmek bunu ~0.1 mm'ye indirir.
+function fitDepthRange(cam, dist) {
+  const near = THREE.MathUtils.clamp(dist * 0.12, 0.02, 25);
+  const far = Math.max(near * 50, dist * 4 + 300);
+  if (Math.abs(cam.near - near) / near > 0.02 || cam.far !== far) {
+    cam.near = near; cam.far = far; cam.updateProjectionMatrix();
+  }
+}
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.08;
@@ -178,6 +187,9 @@ function loadTex(def) {
 }
 // Zemine/yüzeye yapışık ince katmanlar (çizgiler, işaretler, bayraktaki ay-yıldız): z-fighting'i önlemek için öne çek.
 const OVERLAY = /line_|_Marking|Access_Blue|Safety_Amber|tactile|Y2_white|EV_V12_WhiteSymbol|EV_V12_Green/i;
+// Büyük taban yüzeyler (cephe sıvası, avlu kaplamaları, zemin, kiremit) bir adım geriye itilir: aynı düzlemde
+// duran cephe detayları ve döşemeler onlarla yer değiştirip titremez, her zaman önde kalır.
+const BASE = /^(FAC_Mineral_Render|Yard_Concrete|Y2_pav_|Y2_asphalt|Y2_turf|Y2_court_|Y2_dio_soil|Y2_soil|Concrete$|Floors$|Y2_plaster|Y2_context|Roof_Tile)/;
 
 function makeMaterial(def, name) {
   const c = def?.c ?? [0.7, 0.7, 0.7];
@@ -197,6 +209,7 @@ function makeMaterial(def, name) {
   else if (o < 0.99) { m.transparent = true; m.opacity = o; }
   if (isPV) m.envMapIntensity = 1.8;
   if (OVERLAY.test(name)) { m.polygonOffset = true; m.polygonOffsetFactor = -2; m.polygonOffsetUnits = -4; }
+  else if (BASE.test(name)) { m.polygonOffset = true; m.polygonOffsetFactor = 1; m.polygonOffsetUnits = 2; }
   return m;
 }
 
@@ -615,13 +628,21 @@ const mini = (() => {
     if (def?.e) { m.emissive.copy(m.color); m.emissiveIntensity = 0.9; }
     return m;
   }
+  // Kademeli kesitlerde katmanlar aynı kenardan başlar (ör. file, alt kat sıva ve son kat sıvanın yan yüzleri
+  // aynı düzlemde). Malzemeler Rhino'ya içten dışa sırayla eklendiği için GLB'deki sıraları da öyledir:
+  // sonraki malzemeye biraz daha derinlik önceliği verilir, çakışan yüzeylerde hep dıştaki kazanır, titreme olmaz.
   function prepareDetail(scene) {
+    let i = 0;
     scene.traverse((o) => {
       if (!o.isMesh) return;
       const name = (o.name || '').split('__')[1] || '';
       const def = info.materials[name] ?? info.materials[Object.keys(info.materials).find((n) => THREE.PropertyBinding.sanitizeNodeName(n) === name)];
       o.geometry.computeBoundingBox(); o.geometry.computeBoundingSphere();
       o.material = detailMaterial(def);
+      o.material.polygonOffset = true;
+      o.material.polygonOffsetFactor = -0.5 * i;
+      o.material.polygonOffsetUnits = -2 * i;
+      i++;
       o.castShadow = !o.material.transparent; o.receiveShadow = true;
     });
     return scene;
@@ -766,7 +787,7 @@ const mini = (() => {
   }
   function tick() {
     if (!running) return;
-    ctl.update(); r.render(sc, cam); placeLabels();
+    ctl.update(); fitDepthRange(cam, cam.position.distanceTo(ctl.target)); r.render(sc, cam); placeLabels();
     requestAnimationFrame(tick);
   }
   function setBig(on) {
@@ -848,6 +869,7 @@ function loop(now) {
 
   if (busy || dirty) {
     dirty = false;
+    fitDepthRange(camera, camera.position.distanceTo(controls.target));
     renderer.render(scene, camera);
     placePins(now);
     occPending = true;
