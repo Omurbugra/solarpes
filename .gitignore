@@ -1,0 +1,7 @@
+# Arkadaşın şablonu ve render görselleri (yayınlanmıyor)
+template/
+# Rhino export yedekleri
+*.glbbak
+# Yerel araç ayarları
+.claude/
+__pycache__/
