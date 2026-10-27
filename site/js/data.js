@@ -33,7 +33,7 @@ export const FEATURES = [
     eff: [['energy', 'azalır', 'good'], ['emis', 'azalır', 'good'], ['cost', 'orta', 'neu'], ['iod', 'çok iyi', 'good']],
   },
   {
-    key: 'ground', icon: 'ground', group: 'kabuk', tag: 'Kabuk · dikkat', title: 'Zemin yalıtımı',
+    key: 'ground', icon: 'ground', group: 'kabuk', tag: 'Kabuk', title: 'Zemin yalıtımı',
     pin: [-33, 0.4, 39.5],
     // kamera güneybatıdaki ağaç tepesinin (x −49…−44) doğusunda, güneyden alçak açıyla bakar
     view: { target: [-34, -0.3, 37.5], dir: [-0.25, 0.42, 0.87], dist: 19 },
@@ -95,7 +95,7 @@ export const FEATURES = [
     eff: [['energy', 'çok azalır', 'good'], ['emis', 'çok azalır', 'good'], ['cost', 'yüksek', 'neu'], ['iod', 'etkisiz', 'neu']],
   },
   {
-    key: 'pvshade', icon: 'pv', group: 'uretim', tag: 'Üretim · pasif', title: 'Gölgeleme güneş paneli',
+    key: 'pvshade', icon: 'pv', group: 'uretim', tag: 'Üretim', title: 'Gölgeleme güneş paneli',
     pin: [-26, 13.6, 40.6],
     view: { target: [-14, 12.4, 36], dir: [0.32, 0.55, 0.77], dist: 36 },
     detail: { dir: [0.95, 0.35, 0.75] },

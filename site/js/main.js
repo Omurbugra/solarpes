@@ -61,9 +61,9 @@ scene.add(sun, sun.target);
 
 /* ---------- highlight shader ---------- */
 // Her grup (hotspot) kendi uniform'larını taşır; aynı grubun tüm malzemeleri paylaşır.
-const hiCol = new THREE.Color(css('--brand') || '#0C9384');
+const hiCol = new THREE.Color(css('--tint') || '#E8A317');
 const dimCol = new THREE.Color();
-function readDim() { dimCol.set(css('--sky2') || '#F7F9F5'); }
+function readDim() { dimCol.set(css('--sky2') || '#E9EDE6'); }
 readDim();
 const state = {};      // key -> { hi:{value}, dim:{value}, hiT, dimT, meshes:[], box }
 function groupState(key) {
@@ -404,7 +404,7 @@ function buildDock() {
       const f = feat(f0);
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'chip'; b.title = f.title;
-      b.innerHTML = `<i>${String(FEATURES.indexOf(f0) + 1).padStart(2, '0')}</i><svg class="ico"><use href="#i-${f.icon}"/></svg><span>${f.title}</span>`;
+      b.innerHTML = `<i>${FEATURES.indexOf(f0) + 1}</i><svg class="ico"><use href="#i-${f.icon}"/></svg><span>${f.title}</span>`;
       b.classList.toggle('on', f.key === active);
       b.addEventListener('click', () => focus(f.key));
       b.addEventListener('pointerenter', () => setHover(f.key));
@@ -467,7 +467,7 @@ function setHover(k) {
   for (const key in chipEls) chipEls[key].classList.toggle('hl', key === k);
   if (k && pointerIn) {
     const f = feat(FEAT[k]);
-    tip.innerHTML = `<svg class="ico"><use href="#i-${f.icon}"/></svg>${f.title}<small>${active === k ? '' : t('inspect') + ' →'}</small>`;
+    tip.innerHTML = `${f.title}${active === k ? '' : `<small>${t('inspect')}</small>`}`;
     tip.classList.add('on');
   } else tip.classList.remove('on');
   updateTargets();
@@ -477,7 +477,8 @@ function updateTargets() {
   for (const k in state) {
     const gs = state[k];
     const isAct = k === active, isHov = k === hover;
-    gs.hiT = isAct ? 0.55 : isHov ? 0.75 : 0;
+    // Seçili sistem kendi renginde kalır (çevresi soluklaşır); renk vurgusu yalnızca imleç üzerindeyken
+    gs.hiT = isHov && !isAct ? 0.75 : 0;
     gs.dimT = active && !isAct && !isHov ? (k === 'ctx' ? 0.85 : 0.75) : 0;
   }
   invalidate();
@@ -485,20 +486,30 @@ function updateTargets() {
 
 /* ---------- panel ---------- */
 const effIco = { energy: 'energy', emis: 'emis', cost: 'cost', iod: 'iod' };
+// Enerji Kimlik Belgesi okları: boy = etkinin büyüklüğü, renk = yönü (yeşil iyi, gri nötr, turuncu/kırmızı kötü)
+const EKB = {
+  'çok azalır': ['100%', 'var(--ekb-a)'], 'çok iyi': ['100%', 'var(--ekb-a)'],
+  'azalır': ['78%', 'var(--ekb-b)'], 'iyi': ['78%', 'var(--ekb-b)'],
+  'az azalır': ['58%', 'var(--ekb-c)'], 'düşük': ['46%', 'var(--ekb-c)'],
+  'orta': ['64%', 'var(--ekb-n)'], 'nötr': ['46%', 'var(--ekb-n)'], 'etkisiz': ['46%', 'var(--ekb-n)'],
+  'yüksek': ['86%', 'var(--ekb-e)'], 'kötüleşir': ['86%', 'var(--ekb-g)'],
+};
 function fillPanel(f0, animate = true) {
   const f = feat(f0);
-  $('pIdx').textContent = `${String(f.i + 1).padStart(2, '0')} / ${String(FEATURES.length).padStart(2, '0')}`;
+  $('pIdx').textContent = `${f.i + 1} / ${FEATURES.length}`;
   $('pTag').textContent = f.tag;
   $('pIco').setAttribute('href', `#i-${f.icon}`);
   $('pTitle').textContent = f.title;
   $('pBody').innerHTML = f.body.map((p) => `<p class="rbody">${p}</p>`).join('')
     + `<div class="rhow"><b>${t('how')}.</b> ${f.how}</div>`
     + (f.warn ? `<div class="rwarn"><b>⚠</b> ${f.warn}</div>` : '');
-  $('pEff').innerHTML = f.eff.map(([k, v, c]) => `<div class="ef ${c}"><svg class="ico" style="color:${INDICATORS[k].color}"><use href="#i-${effIco[k]}"/></svg>${indicatorLabel(k, INDICATORS[k].label)}<b>${effValue(v)}</b></div>`).join('');
+  $('pEff').innerHTML = f.eff.map(([k, v, c]) => {
+    const [len, col] = EKB[v] ?? ['56%', c === 'bad' ? 'var(--ekb-g)' : c === 'good' ? 'var(--ekb-b)' : 'var(--ekb-n)'];
+    return `<li class="ef ${c}"><svg class="ico" style="color:${INDICATORS[k].color}"><use href="#i-${effIco[k]}"/></svg>${indicatorLabel(k, INDICATORS[k].label)}<b style="--len:${len};--c:${col}">${effValue(v)}</b></li>`;
+  }).join('');
   if (!animate) return;
   const sc = $('pScroll');
   sc.scrollTop = 0;
-  sc.classList.remove('p-anim'); void sc.offsetWidth; sc.classList.add('p-anim');
 }
 
 function focus(k) {
@@ -825,9 +836,9 @@ $('themeBtn').addEventListener('click', () => {
   const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
   root.dataset.theme = dark ? 'light' : 'dark';
   try { localStorage.setItem('sp-theme', root.dataset.theme); } catch {}
-  readDim(); hiCol.set(css('--brand')); invalidate();
+  readDim(); hiCol.set(css('--tint')); invalidate();
 });
-try { const th = localStorage.getItem('sp-theme'); if (th) { document.documentElement.dataset.theme = th; readDim(); hiCol.set(css('--brand')); } } catch {}
+try { const th = localStorage.getItem('sp-theme'); if (th) { document.documentElement.dataset.theme = th; readDim(); hiCol.set(css('--tint')); } } catch {}
 
 /* ---------- loop ---------- */
 let dirty = true;

@@ -3,9 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Enerji Renovasyon Senaryoları · SolarPES</title>
+<title>Enerji renovasyon senaryoları – SolarPES</title>
 <meta name="description" content="Ankara'daki bir devlet okulunda dokuz enerji renovasyon önlemini 3B model üzerinde keşfedin.">
 <link rel="preload" href="assets/school.glb" as="fetch" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;500;600;700;800&display=swap">
 <link rel="stylesheet" href="css/style.css">
 <script type="importmap">
 { "imports": {
@@ -40,8 +43,12 @@
 </svg>
 
 <header class="top">
-  <a class="brand" href="#"><svg class="ico"><use href="#i-mark"/></svg><span>SolarPES<small data-i18n="brandSub">Okul enerji renovasyonu</small></span></a>
+  <div class="title">
+    <h1 data-i18n="h1">Enerji renovasyon senaryoları</h1>
+    <p data-i18n="lead">Ankara’daki bir devlet okulunda dokuz önlem, tek bir modelde. Bir sisteme gelip tıklayın; nasıl uygulandığı ve neyi değiştirdiği yanda açılır.</p>
+  </div>
   <div class="top-r">
+    <a class="brand" href="#"><svg class="ico"><use href="#i-mark"/></svg>SolarPES</a>
     <div class="lang" role="group" aria-label="Dil / Language">
       <button type="button" data-lang="tr" aria-pressed="true">TR</button><button type="button" data-lang="en" aria-pressed="false">EN</button>
     </div>
@@ -50,21 +57,13 @@
 </header>
 
 <main class="wrap">
-  <section class="head">
-    <div>
-      <span class="kicker" data-i18n="kicker">Bir bakışta</span>
-      <h1 data-i18n="h1">Enerji renovasyon senaryoları</h1>
-    </div>
-    <p data-i18n="lead">Model üzerinde bir sisteme gelin, parlasın; tıklayın, model o sisteme yaklaşsın. Yapısı ve dört indikatöre etkisi yanda açılır.</p>
-  </section>
-
   <section class="stage" id="stage" data-i18n-aria="stage" aria-label="Okul 3B modeli">
     <div class="gl" id="gl"></div>
     <div class="pins" id="pins"></div>
     <div class="tip" id="tip" role="status"></div>
 
-    <div class="hud tl" id="hint"><span class="dot"></span><span data-i18n="hint">Sürükle: döndür · Kaydır: yakınlaş · Tıkla: incele</span></div>
-    <div class="hud tr ctl">
+    <p class="hint" id="hint" data-i18n="hint">Döndürmek için sürükleyin, yakınlaşmak için kaydırın.</p>
+    <div class="ctl">
       <button type="button" id="rotBtn" data-i18n-title="rot" title="Otomatik döndür" aria-pressed="false"><svg class="ico"><use href="#i-rotate"/></svg></button>
       <button type="button" id="homeBtn" data-i18n-title="home" title="Başa dön"><svg class="ico"><use href="#i-reset"/></svg></button>
     </div>
@@ -77,7 +76,8 @@
 
     <aside class="panel" id="panel" aria-hidden="true" aria-live="polite">
       <div class="p-top">
-        <span class="p-idx mono" id="pIdx">01 / 09</span>
+        <span class="p-tag" id="pTag"></span>
+        <span class="p-idx" id="pIdx">1 / 9</span>
         <div class="p-nav">
           <button type="button" id="pPrev" data-i18n-aria="prev" aria-label="Önceki sistem"><svg class="ico"><use href="#i-prev"/></svg></button>
           <button type="button" id="pNext" data-i18n-aria="next" aria-label="Sonraki sistem"><svg class="ico"><use href="#i-next"/></svg></button>
@@ -85,23 +85,22 @@
         </div>
       </div>
       <div class="p-scroll" id="pScroll">
-        <span class="kicker" id="pTag"></span>
-        <div class="p-head"><span class="p-ico"><svg class="ico"><use id="pIco" href="#i-wall"/></svg></span><h2 id="pTitle"></h2></div>
+        <div class="p-head"><svg class="ico"><use id="pIco" href="#i-wall"/></svg><h2 id="pTitle"></h2></div>
         <figure class="mini" id="mini">
           <div class="mini-gl" id="miniGl"></div>
-          <figcaption><svg class="ico"><use href="#i-cube"/></svg><span id="miniCap">Detay modeli</span></figcaption>
+          <figcaption id="miniCap"></figcaption>
           <button type="button" class="mini-expand" id="miniBig" data-i18n-title="big" title="Detayı büyüt" aria-pressed="false" hidden><svg class="ico"><use href="#i-expand"/></svg></button>
         </figure>
         <ol class="legend" id="pLegend" hidden></ol>
         <div id="pBody"></div>
-        <div class="eff" id="pEff"></div>
+        <h3 class="p-sub" data-i18n="effects">Dört göstergeye etkisi</h3>
+        <ul class="eff" id="pEff"></ul>
       </div>
     </aside>
 
     <div class="loader" id="loader">
       <div class="ld-box">
-        <svg class="ico"><use href="#i-mark"/></svg>
-        <span class="mono"><span data-i18n="loading">Model yükleniyor</span> <b id="ldPct">0%</b></span>
+        <span><span data-i18n="loading">Model yükleniyor</span> <b id="ldPct">0%</b></span>
         <i><em id="ldBar"></em></i>
       </div>
     </div>
