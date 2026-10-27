@@ -5,3 +5,6 @@ template/
 # Yerel araç ayarları
 .claude/
 __pycache__/
+# Senaryo sayfası arketip kiti (ayrı çalışma, depoya konmuyor)
+rhino/build_archetypes.py
+site/assets/arch/
